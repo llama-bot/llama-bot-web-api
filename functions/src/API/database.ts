@@ -1,43 +1,16 @@
-import admin, { auth, firestore } from "firebase-admin"
+import admin, { firestore } from "firebase-admin"
+import { logger } from "firebase-functions"
 
 interface DatabaseResult {
 	success: boolean
 	error?: string
 }
 
-interface UsersResult extends DatabaseResult {
-	users?: FirebaseFirestore.DocumentData[]
-}
-
 interface UserResult extends DatabaseResult {
-	user?: auth.UserRecord | FirebaseFirestore.DocumentData
+	user?: Express.User | FirebaseFirestore.DocumentData
 }
 
 export default {
-	getUsers: async (): Promise<UsersResult> => {
-		let result
-		try {
-			const users: FirebaseFirestore.DocumentData[] = []
-
-			await admin
-				.firestore()
-				.collection("users")
-				.orderBy("createdAt", "desc")
-				.get()
-				.then((data) =>
-					data.forEach((user) => {
-						users.push(user.data())
-					})
-				)
-
-			result = { success: true, users: users }
-		} catch (error) {
-			console.error(`Error getting users: ${error}`)
-			result = { success: false, error: error.message }
-		}
-
-		return result
-	},
 	findUser: async (uid: string): Promise<UserResult> => {
 		let result
 		try {
@@ -47,22 +20,26 @@ export default {
 				? { success: true, user: user.data() }
 				: { success: false, error: `user with uid ${uid} does not exist` }
 		} catch (error) {
-			console.log(`SEARCH USER ERROR: ${error.message}`)
+			logger.error("Error finding user", error)
 			result = { success: false, error: error.message }
-			console.log("RETURNING OBJECT:")
-			console.log(result)
 		}
 
 		return result
 	},
-	newUser: async (profile: auth.CreateRequest): Promise<UserResult> => {
+	newUser: async (profile: Express.User): Promise<UserResult> => {
 		let result
 		try {
 			const userRecord = await admin.auth().createUser(profile)
-			await firestore().doc(`/users/${profile.uid}`).set(profile)
+			await firestore().doc(`/users/${profile.id}`).set({
+				avatar: profile.avatar,
+				discriminator: profile.discriminator,
+				email: profile.email,
+				id: profile.id,
+				username: profile.username,
+			})
 			result = { success: true, user: userRecord }
 		} catch (error) {
-			console.error(`Error creating a user: ${error}`)
+			logger.error("Error creating user", error)
 			result = { success: false, error: error.message }
 		}
 		return result
