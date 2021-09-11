@@ -10,7 +10,7 @@ const checkIfLoggedIn = (req: Request, res: Response, next: NextFunction) => {
 }
 
 export default (app: Express): void => {
-	app.get("/test", checkIfLoggedIn, async (req, res) => {
+	app.get("/user-data", checkIfLoggedIn, async (req, res) => {
 		req.user
 			? res.status(200).send(req.user)
 			: res.status(500).send("Failed to get user")
