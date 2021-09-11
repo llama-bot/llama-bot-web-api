@@ -29,15 +29,15 @@ export default {
 	newUser: async (profile: Express.User): Promise<UserResult> => {
 		let result
 		try {
-			const userRecord = await admin.auth().createUser(profile)
-			await firestore().doc(`/users/${profile.id}`).set({
+			const newUserData = {
 				avatar: profile.avatar,
 				discriminator: profile.discriminator,
 				email: profile.email,
 				id: profile.id,
 				username: profile.username,
-			})
-			result = { success: true, user: userRecord }
+			}
+			await firestore().doc(`/users/${profile.id}`).set(newUserData)
+			result = { success: true, user: newUserData }
 		} catch (error) {
 			logger.error("Error creating user", error)
 			result = { success: false, error: error.message }
