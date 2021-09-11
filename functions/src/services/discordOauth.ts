@@ -12,9 +12,9 @@ passport.serializeUser((user, done) => {
 	done(null, user.id)
 })
 
-passport.deserializeUser(async (uid: string, done) => {
+passport.deserializeUser(async (id: string, done) => {
 	try {
-		const user = await database.findUser(uid)
+		const user = await database.findUser(id)
 		if (user.success === true) {
 			done(null, user.user as Express.User)
 		} else {
@@ -26,7 +26,7 @@ passport.deserializeUser(async (uid: string, done) => {
 	}
 
 	database
-		.findUser(uid)
+		.findUser(id)
 		.then((user) => {
 			done(null, user.user as Express.User)
 		})
