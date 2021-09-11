@@ -7,6 +7,6 @@ typings/
 # Node.js dependency directory
 node_modules/
 
-# sevret keys. Read README.md for more information.
+# sevret keys
 src/secret.json
-src/config.json
+src/firebase-adminsdk.json
