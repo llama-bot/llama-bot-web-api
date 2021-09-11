@@ -2,25 +2,17 @@
  * Handle firestore read/writes related to discord bot
  */
 
-import { firestore } from "firebase-admin"
-import { logger } from "firebase-functions"
+import { Express, Request, Response, NextFunction } from "express"
 
-import { Express } from "express"
+const checkIfLoggedIn = (req: Request, res: Response, next: NextFunction) => {
+	if (req.isAuthenticated()) return next()
+	res.status(401).send()
+}
 
 export default (app: Express): void => {
-	// todo: only allow admins to make request
-	app.get("/list-servers", (req, res) => {
-		logger.log("listing server")
-
-		firestore()
-			.collection("llama-bot")
-			.doc("servers")
-			.listCollections()
-			.then((documentSnapshots) => {
-				res.status(200).json(documentSnapshots.map((doc) => doc.id))
-			})
-			.catch((reason) => {
-				res.send(reason)
-			})
+	app.get("/test", checkIfLoggedIn, async (req, res) => {
+		req.user
+			? res.status(200).send(req.user)
+			: res.status(500).send("Failed to get user")
 	})
 }
