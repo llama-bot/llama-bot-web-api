@@ -17,29 +17,21 @@ import "./services/discordOauth"
 
 const app = express()
 
-const sessionOption = {
-	secret: secret.session,
-	resave: true,
-	saveUninitialized: false,
-	cookie: {},
-}
-
-if (process.env.FUNCTIONS_EMULATOR !== "true") {
-	app.set("trust proxy", 1)
-	app.use(
-		cors({
-			origin: [
-				"https://llama-bot.github.io",
-				"https://llama-bot.developomp.com",
-			],
-		})
-	)
-
-	sessionOption.cookie = { secure: true }
-}
-
-app.use(expressSession(sessionOption))
-
+app.use(
+	cors({
+		origin: ["https://llama-bot.github.io", "http://localhost:3000"],
+	})
+)
+app.use(
+	expressSession({
+		secret: secret.session,
+		resave: true,
+		saveUninitialized: false,
+		cookie: {
+			secure: true,
+		},
+	})
+)
 app.use(passport.initialize())
 app.use(passport.session())
 
