@@ -12,21 +12,19 @@ export default (app: Express): void => {
 		"/login",
 		passport.authenticate("discord", {
 			scope: config.scopes,
-			failureRedirect: "/error",
-		})
+		}),
+		async function (req, res) {
+			if (!req.user) res.status(500).send("Failed to log in with discord")
+		}
 	)
 
 	app.get("/logout", async (req, res) => {
 		req.logout()
-		res.redirect("/api/user")
+		res.status(200).send()
 	})
 
 	// OAuth2 callback
-	app.get(
-		"/auth",
-		passport.authenticate("discord", { failureRedirect: "/error" }),
-		(_, res) => {
-			res.redirect("/api/user")
-		}
-	)
+	app.get("/auth", passport.authenticate("discord"), (_, res) => {
+		res.status(200).send()
+	})
 }
