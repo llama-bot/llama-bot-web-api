@@ -1,4 +1,4 @@
-import { initializeApp, credential, ServiceAccount } from "firebase-admin"
+import admin from "firebase-admin"
 import { https } from "firebase-functions"
 
 import express from "express"
@@ -52,8 +52,8 @@ app.use(passport.session())
 dataRoutes(app)
 authRoutes(app)
 
-initializeApp({
-	credential: credential.cert(serviceAccountKey as ServiceAccount),
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccountKey as admin.ServiceAccount),
 })
 
 exports.api = https.onRequest(app)
