@@ -24,13 +24,7 @@ const sessionOption = {
 	cookie: {},
 }
 
-if (process.env.FUNCTIONS_EMULATOR === "true") {
-	app.use(
-		cors({
-			origin: ["http://localhost"],
-		})
-	)
-} else {
+if (process.env.FUNCTIONS_EMULATOR !== "true") {
 	app.set("trust proxy", 1)
 	app.use(
 		cors({
