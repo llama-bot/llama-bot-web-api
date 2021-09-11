@@ -1,7 +1,7 @@
 import { logger } from "firebase-functions"
 
 import passport from "passport"
-import DiscordStrategy from "passport-discord"
+import PassportDiscord from "passport-discord"
 
 import database from "../API/database"
 
@@ -9,7 +9,7 @@ import secret from "../secret.json"
 import config from "../config.json"
 
 passport.serializeUser((user, done) => {
-	done(null, user.uid)
+	done(null, user.id)
 })
 
 passport.deserializeUser(async (uid: string, done) => {
@@ -21,27 +21,28 @@ passport.deserializeUser(async (uid: string, done) => {
 			done(null)
 		}
 	} catch (error) {
-		logger.log("Error deserializing user", error.message)
+		logger.error("Error deserializing user", error.message)
 		done(error)
 	}
+
 	database
 		.findUser(uid)
 		.then((user) => {
 			done(null, user.user as Express.User)
 		})
 		.catch((error) => {
-			logger.log("Error deserializing user", error.message)
+			logger.error("Error deserializing user", error.message)
 		})
 })
 
 passport.use(
-	new DiscordStrategy.Strategy(
+	new PassportDiscord.Strategy(
 		{
 			clientID: secret.clientID,
 			clientSecret: secret.clientSecret,
 
 			callbackURL:
-				(process.env.FUNCTIONS_EMULATOR
+				(process.env.FUNCTIONS_EMULATOR === "true"
 					? `${secret.projectID}/${config.region}`
 					: "") + "/api/auth",
 
@@ -56,18 +57,13 @@ passport.use(
 					done(null, searchUserResult.user as Express.User)
 					return searchUserResult.user
 				} else {
-					const newUser = {
-						username: profile.username,
-						discriminator: profile.discriminator,
-						uid: profile.id,
-						email: profile.email,
-						avatar: profile.avatar,
-						guilds: profile.guilds,
+					const newUser: Express.User = {
+						...profile,
 						token: accessToken,
 						refreshToken: refreshToken,
 					}
 					await database.newUser(newUser)
-					return done(null, newUser as unknown as Express.User)
+					return done(null, newUser)
 				}
 			} catch (error) {
 				return logger.error("Error creating a user", error)
