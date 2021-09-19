@@ -1,4 +1,0 @@
-{
-	"region": "us-central1",
-	"scopes": ["identify", "email", "guilds"]
-}
